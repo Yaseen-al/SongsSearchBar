@@ -12,14 +12,48 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
     @IBOutlet weak var myTableView: UITableView!
     @IBOutlet weak var mySearchBar: UISearchBar!
     var mySongList = [Song]()
+    var filteredSongs: [Song]{
+        guard let searchTerm = searchTerm, searchTerm != "" else {
+            return mySongList
+        }
+        guard let scopeTitle = self.mySearchBar.scopeButtonTitles else {
+            return mySongList
+        }
+        let selectedIndex = self.mySearchBar.selectedScopeButtonIndex
+        let filterignCriteria = scopeTitle[selectedIndex]
+        switch filterignCriteria {
+        case "Name":
+            return mySongList.filter{$0.name.lowercased().contains(searchTerm.lowercased())}
+        case "Artist":
+            return mySongList.filter{$0.artist.lowercased().contains(searchTerm.lowercased())}
+        default:
+            return mySongList
+        }
+        
+    }
+    
+    var searchTerm: String?{
+        didSet{
+        self.myTableView.reloadData()
+        }
+    }
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        print("search is clicked")
+        self.searchTerm = searchBar.text
+    }
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        self.searchTerm = searchText
+    }
+    
+    
     // I need two method to answer how many rows and how are the cells will look like
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-      return  mySongList.count
+      return  filteredSongs.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let personSetup = mySongList[indexPath.row]
+        let personSetup = filteredSongs[indexPath.row]
         guard let cell: UITableViewCell = myTableView.dequeueReusableCell(withIdentifier: "myCell") else {
             let defaultCell = UITableViewCell()
             return defaultCell
